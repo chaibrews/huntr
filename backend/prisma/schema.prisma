@@ -61,5 +61,7 @@ model StatusHistory {
   applicationId String
   from          Status
   to            Status
+  changedAt     DateTime    @default(now())
+  
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }

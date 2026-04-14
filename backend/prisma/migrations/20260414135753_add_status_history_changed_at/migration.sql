@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "StatusHistory" ADD COLUMN     "changedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
