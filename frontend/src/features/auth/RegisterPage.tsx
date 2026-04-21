@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function LoginPage() {
-  const { login } = useAuth();
+export default function RegisterPage() {
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -18,11 +18,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
+      await register(email, password);
       // On success, redirect to the board
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Register failed");
     } finally {
       setLoading(false);
     }
