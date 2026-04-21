@@ -70,14 +70,24 @@ export default function ApplicationDetail() {
 
   async function handleStatusChange(status: Status) {
     if (!app) return;
-    const updated = await changeStatus(app.id, status);
-    setApp(updated);
+    setApp((prev) => (prev ? { ...prev, status } : prev)); // optimistic
+    try {
+      const updated = await changeStatus(app.id, status);
+      setApp(updated); // reconcile with server response (includes new history entry)
+    } catch {
+      setApp(app); // rollback on failure
+    }
   }
 
   async function handleWorkSetupChange(workSetup: WorkSetup) {
     if (!app) return;
-    const updated = await update(app.id, { workSetup });
-    setApp(updated);
+    setApp((prev) => (prev ? { ...prev, workSetup } : prev)); // optimistic
+    try {
+      const updated = await update(app.id, { workSetup });
+      setApp(updated);
+    } catch {
+      setApp(app);
+    }
   }
 
   async function handleSaveNotes() {
