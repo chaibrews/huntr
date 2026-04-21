@@ -13,7 +13,7 @@ export interface Application {
   company: string;
   role: string;
   status: Status;
-  workSetup: WorkSetup;
+  workSetup: WorkSetup | null;
   location: string | null;
   appliedAt: string | null;
   url: string | null;

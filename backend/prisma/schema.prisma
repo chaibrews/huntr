@@ -43,7 +43,7 @@ model Application {
   company     String
   role        String
   status      Status    @default(SAVED)
-  workSetup   WorkSetup @default(ONSITE)
+  workSetup   WorkSetup?
   location    String?
   appliedAt   DateTime?
   url         String?
