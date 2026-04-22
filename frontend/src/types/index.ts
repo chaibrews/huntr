@@ -21,6 +21,7 @@ export interface Application {
   createdAt: string;
   updatedAt: string;
   statusHistory: StatusHistory[];
+  tags: Tag[];
 }
 
 export interface StatusHistory {
@@ -38,4 +39,10 @@ export interface User {
 export interface AuthResponse {
   token: string;
   user: User;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }
