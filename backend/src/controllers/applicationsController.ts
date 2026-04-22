@@ -12,7 +12,7 @@ const ApplicationBody = z.object({
   status: z
     .enum(["SAVED", "APPLIED", "INTERVIEW", "OFFER", "REJECTED"])
     .optional(),
-  workSetup: z.enum(["ONSITE", "HYBRID", "REMOTE"]).optional(),
+  workSetup: z.enum(["ONSITE", "HYBRID", "REMOTE"]).nullable().optional(),
   location: z.string().nullable().optional(),
   appliedAt: z.string().datetime().nullable().optional(),
   url: z.string().url().nullable().optional(),

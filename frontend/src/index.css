@@ -1,22 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
-
-@font-face {
-  font-family: "Satoshi Regular";
-  font-style: normal;
-  font-weight: normal;
-  src:
-    local("Satoshi Regular"),
-    url("/assets/fonts/Satoshi-Regular.woff") format("woff");
-}
-
-@font-face {
-  font-family: "Satoshi Regular";
-  font-style: normal;
-  font-weight: bold;
-  src:
-    local("Satoshi Bold"),
-    url("/assets/fonts/Satoshi-Bold.woff") format("woff");
-}
 
 :root {
   --color-test: #d7d6e7;
@@ -28,6 +11,7 @@
 
   --color-primary: #a59cf0; /* mid lavender */
   --color-primary-darker: #4a3fb3; /* strong violet for buttons/headers */
+  --color-primary-lighter: #eaebff;
 
   --color-secondary: #f9bece; /* pastel pink accent */
   --color-secondary-darker: #e68aa3; /* richer pink for hover/contrast */
@@ -43,14 +27,20 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: "Satoshi Regular", sans-serif;
+    font-family: "Poppins", sans-serif;
   }
 }
 
 @layer utilities {
   .primary-button {
-    @apply rounded-lg py-2 cursor-pointer  transition-all duration-300
+    @apply rounded-lg cursor-pointer py-2 transition-all duration-300
           text-white text-sm  bg-primary-darker hover:bg-primary-darker/90
+          disabled:opacity-50 hover:shadow-[0_0_10px_rgba(139,92,246,0.5)];
+  }
+
+  .secondary-button {
+    @apply rounded-sm cursor-pointer  transition-all duration-300
+          text-white text-xs  bg-primary-darker hover:bg-primary-darker/90
           disabled:opacity-50 hover:shadow-[0_0_10px_rgba(139,92,246,0.5)];
   }
 }

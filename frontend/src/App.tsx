@@ -1,6 +1,9 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useAuthContext } from "./context/AuthContext";
 import BoardPage from "./features/board/BoardPage";
+import CalendarPage from "./features/calendar/CalendarPage";
+import AnalyticsPage from "./features/analytics/AnalyticsPage";
+import ProfilePage from "./features/profile/ProfilePage";
 import LoginPage from "./features/auth/LoginPage";
 import RegisterPage from "./features/auth/RegisterPage";
 import ApplicationDetail from "./features/applications/ApplicationDetail";
@@ -37,6 +40,33 @@ function App() {
           element={
             <ProtectedRoute>
               <ApplicationDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <CalendarPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

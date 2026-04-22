@@ -1,191 +1,205 @@
-import { useAuth } from "../../hooks/useAuth";
-import { useApplications } from "../../hooks/useApplications";
-import type { Status, Application } from "../../types";
-import {
-  Calendar,
-  ClipboardList,
-  Gift,
-  MessageSquare,
-  PieChart,
-  Plus,
-  type LucideIcon,
-} from "lucide-react";
-import BoardColumn from "./BoardColumn";
 import { useState } from "react";
+// import { useAuth } from "../../hooks/useAuth";
+import type { Status, Application } from "../../types";
+import { useApplications } from "../../hooks/useApplications";
+import { KANBAN_STATUSES, STATUS_LABELS } from "../../constants/status";
+import AppShell from "../../components/AppShell";
+import BoardColumn from "./BoardColumn";
 import ApplicationForm from "../applications/ApplicationForm";
+import { Plus, Search } from "lucide-react";
 
-// The kanban columns in order
-const STATUSES: Status[] = ["SAVED", "APPLIED", "INTERVIEW", "OFFER"];
+type Tab = "applications" | "offers" | "archived";
 
-// Display labels for each status
-const STATUS_LABELS: Record<Status, string> = {
-  SAVED: "saved",
-  APPLIED: "applied",
-  INTERVIEW: "interview",
-  OFFER: "offer",
-  REJECTED: "rejected",
-  ARCHIVED: "archived",
-};
+const TABS: { key: Tab; label: string }[] = [
+  { key: "applications", label: "Applications" },
+  { key: "offers", label: "Offers" },
+  { key: "archived", label: "Archived" },
+];
 
-const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
-  SAVED: { bg: "#EBEAF3", fg: "#6a698c" },
-  APPLIED: { bg: "#EAEBFC", fg: "#6D83DD" },
-  INTERVIEW: { bg: "#F0EBFC", fg: "#806ed3" },
-  OFFER: { bg: "#EFF3F2", fg: "#A2C4B2" },
-};
-
-const STAT_ICONS: Record<
-  string,
-  { icon: LucideIcon; bg: string; color: string }
-> = {
-  applications: { icon: ClipboardList, bg: "#EAEBFC", color: "#6D83DD" },
-  interviews: { icon: MessageSquare, bg: "#F0EBFC", color: "#B6A9EF" },
-  offers: { icon: Gift, bg: "#EFF3F2", color: "#A2C4B2" },
-  rate: { icon: PieChart, bg: "#ffeffe", color: "#fcbff8" },
-  week: { icon: Calendar, bg: "#EBEAF3", color: "#AFAEC4" },
+// Which statuses show under each tab
+const TAB_STATUSES: Record<Tab, Status[]> = {
+  applications: ["SAVED", "APPLIED", "INTERVIEW"],
+  offers: ["OFFER"],
+  archived: ["REJECTED", "ARCHIVED"],
 };
 
 export default function BoardPage() {
-  const { user, logout } = useAuth();
-  const { applications, loading, error, changeStatus, remove, create } =
-    useApplications();
+  const { applications, loading, error, remove, create } = useApplications();
+  const [activeTab, setActiveTab] = useState<Tab>("applications");
   const [showForm, setShowForm] = useState(false);
+  const [defaultStatus, setDefaultStatus] = useState<Status>("SAVED");
+  const [search, setSearch] = useState("");
 
-  // Group applications by status — produces an object like:
-  // { SAVED: [...], APPLIED: [...], INTERVIEW: [...], ... }
-  const grouped = STATUSES.reduce<Record<Status, Application[]>>(
+  // Filtered by search term
+  const filtered = applications.filter((a) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      a.company.toLowerCase().includes(q) ||
+      a.role.toLowerCase().includes(q) ||
+      (a.location ?? "").toLowerCase().includes(q) ||
+      a.tags?.some((tag) => tag.name.toLowerCase().includes(q))
+    );
+  });
+
+  // Group all applications by status
+  const grouped = KANBAN_STATUSES.reduce<Record<Status, Application[]>>(
     (acc, status) => {
-      acc[status] = applications.filter((a) => a.status === status);
+      acc[status] = filtered.filter((a) => a.status === status);
       return acc;
     },
     {} as Record<Status, Application[]>,
   );
 
-  // Stats
-  const interviewCount = grouped["INTERVIEW"]?.length ?? 0;
-  const offerCount = grouped["OFFER"]?.length ?? 0;
-  const appliedCount = applications.filter((a) => a.status !== "SAVED").length;
-  const responseRate =
-    appliedCount > 0
-      ? Math.round(((interviewCount + offerCount) / appliedCount) * 100)
-      : 0;
-  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const thisWeek = applications.filter(
-    (a) => new Date(a.createdAt) > oneWeekAgo,
-  ).length;
+  // Which statuses to show in current tab
+  const visibleStatuses = TAB_STATUSES[activeTab].filter((s) =>
+    KANBAN_STATUSES.includes(s),
+  );
 
-  const stats = [
-    { key: "applications", label: "Applications", value: appliedCount },
-    { key: "interviews", label: "Interviews", value: interviewCount },
-    { key: "offers", label: "Offers", value: offerCount },
-    { key: "rate", label: "Response Rate", value: `${responseRate}%` },
-    { key: "week", label: "This Week", value: `+${thisWeek}` },
-  ];
+  function openForm(status: Status = "SAVED") {
+    setDefaultStatus(status);
+    setShowForm(true);
+  }
 
   return (
     <div className="min-h-screen">
-      {/* NAV */}
-      <header className="sticky flex items-center justify-between px-8 py-4 bg-white/80 border-b border-shadow">
-        {/* Left Side Nav */}
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1.5">
-            <img src="/huntr.svg" alt="Logo" className="w-6" />
-            <h1 className="text-xl  text-primary-darker">huntR.</h1>
+      <AppShell
+        headerLeft={
+          // Search bar
+          <div className="relative">
+            <Search
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/30"
+            />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search"
+              className="pl-9 pr-4 py-2 text-sm bg-white border border-shadow rounded-lg
+                       w-xl focus:outline-none focus:border-primary-darker/40 transition-colors"
+            />
           </div>
-          <span className="text-foreground/40">|</span>
-          <span className="text-sm text-foreground/70">Dashboard</span>
-        </div>
-        {/* Right Side Nav */}
-        <div className="flex items-center gap-3">
+        }
+        headerRight={
           <button
             onClick={() => setShowForm(true)}
-            className="primary-button bg-secondary px-4 flex items-center gap-1"
+            className="primary-button flex items-center gap-1.5 px-4 py-2 text-sm"
           >
-            <Plus size={16} /> Add Application
+            <Plus size={15} />
+            <span className="text-sm">New Application</span>
           </button>
-
-          <div
-            title={user?.email}
-            className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold cursor-pointer"
-          >
-            {user?.email?.[0]?.toUpperCase() ?? "★"}
-          </div>
-
-          <button
-            onClick={logout}
-            className="text-sm  text-foreground/40 hover:text-foreground/70 transition-colors"
-          >
-            Sign Out
-          </button>
+        }
+      >
+        {/* ── TABS ── */}
+        <div className="flex items-center gap-6 border-b border-shadow mb-6 -mt-2">
+          {TABS.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                activeTab === key
+                  ? "text-primary-darker border-primary-darker"
+                  : "text-foreground/40 border-transparent hover:text-foreground/70"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-      </header>
 
-      {/* CONTENT PAGE */}
-      <div className="px-8 py-6">
-        <div className="grid grid-cols-[200px_1fr] gap-6">
-          {/* STAT CARDS */}
-          <div className="grid grid-rows-5 gap-4 ">
-            {stats.map((s, i) => {
-              const cfg = STAT_ICONS[s.key];
-              return (
-                <div
-                  key={s.key}
-                  className={`flex rounded-lg border border-shadow p-4 gap-2`}
-                  style={{
-                    color: cfg.color,
-                    animationDelay: `${i * 0.05}s`,
-                  }}
-                >
-                  <div>{<cfg.icon size={32} />}</div>
-                  <div className="flex flex-col">
-                    <div className="text-xl text-foreground tracking-tight leading-none">
-                      {s.value}
-                    </div>
-                    <div className="text-sm  text-foreground/80">{s.label}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        {/* ── BOARD ── */}
+        {loading && (
+          <p className="text-sm text-primary text-center py-12">Loading…</p>
+        )}
+        {error && (
+          <p className="text-sm text-red-400 text-center py-12">{error}</p>
+        )}
 
-          {/* BOARD CARDS */}
-          <div>
-            {/* Loading State */}
-            {loading && (
-              <p className="text-sm text-primary text-center">Loading...</p>
-            )}
-            {error && (
-              <p className="text-sm text-red-400 text-center">{error}</p>
-            )}
-
-            {!loading && !error && (
-              <div className="grid grid-cols-4 gap-3">
-                {STATUSES.map((status) => (
+        {!loading && !error && (
+          <>
+            {/* Kanban view forapplications tabs */}
+            {activeTab === "applications" && (
+              <div
+                className="grid gap-5"
+                style={{
+                  gridTemplateColumns: `repeat(${visibleStatuses.length}, minmax(0, 1fr))`,
+                }}
+              >
+                {visibleStatuses.map((status) => (
                   <BoardColumn
                     key={status}
-                    color={STATUS_COLORS[status]}
+                    status={status}
                     label={STATUS_LABELS[status]}
                     applications={grouped[status] ?? []}
-                    onStatusChange={changeStatus}
                     onDelete={remove}
+                    onAddClick={openForm}
                   />
                 ))}
               </div>
             )}
-          </div>
-        </div>
-      </div>
 
-      {/* ── ADD FORM MODAL ── */}
-      {showForm && (
-        <ApplicationForm
-          onClose={() => setShowForm(false)}
-          onCreate={async (data) => {
-            await create(data);
-            setShowForm(false);
-          }}
-        />
-      )}
+            {/* Placeholder for Offers tab — will be its own page/component */}
+            {activeTab === "offers" && (
+              <p className="text-sm text-foreground/40 text-center py-12">
+                Offers page coming soon.
+              </p>
+            )}
+
+            {/* Archived / Rejected — simple list for now */}
+            {activeTab === "archived" && (
+              <div className="flex flex-col gap-2">
+                {filtered
+                  .filter((a) => TAB_STATUSES.archived.includes(a.status))
+                  .map((app) => (
+                    <div
+                      key={app.id}
+                      className="bg-white border border-shadow rounded-lg px-4 py-3 flex items-center gap-4"
+                    >
+                      <span className="text-sm font-medium text-foreground">
+                        {app.company}
+                      </span>
+                      <span className="text-sm text-foreground/60">
+                        {app.role}
+                      </span>
+                      {app.location && (
+                        <span className="text-xs text-foreground/40">
+                          {app.location}
+                        </span>
+                      )}
+                      <span className="ml-auto text-xs text-foreground/40 capitalize">
+                        {app.status.toLowerCase()}
+                      </span>
+                    </div>
+                  ))}
+                {filtered.filter((a) =>
+                  TAB_STATUSES.archived.includes(a.status),
+                ).length === 0 && (
+                  <p className="text-sm text-foreground/30 text-center py-12">
+                    Nothing here yet.
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ── FORM MODAL ── */}
+        {showForm && (
+          <ApplicationForm
+            defaultStatus={defaultStatus}
+            onClose={() => setShowForm(false)}
+            onCreate={async (data) => {
+              try {
+                await create(data); // call the hook’s create function
+                setShowForm(false); // close the modal after success
+              } catch (err) {
+                console.error("Failed to create application", err);
+              }
+            }}
+          />
+        )}
+      </AppShell>
     </div>
   );
 }
