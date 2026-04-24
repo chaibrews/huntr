@@ -8,6 +8,7 @@ import {
   updateApplicationStatus,
   deleteApplication,
 } from "../controllers/applicationsController";
+import { attachTag, detachTag } from "../controllers/tagsController";
 
 const router = Router();
 
@@ -18,5 +19,7 @@ router.get("/:id", getApplicationById);
 router.patch("/:id", updateApplication);
 router.patch("/:id/status", updateApplicationStatus);
 router.delete("/:id", deleteApplication);
+router.post("/:id/tags/:tagId", attachTag);
+router.delete("/:id/tags/:tagId", detachTag);
 
 export default router;

@@ -17,6 +17,15 @@ const ApplicationBody = z.object({
   appliedAt: z.string().datetime().nullable().optional(),
   url: z.string().url().nullable().optional(),
   notes: z.string().nullable().optional(),
+  // Tags sent from the form as inline objects
+  tags: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        color: z.string(),
+      }),
+    )
+    .optional(),
 });
 
 // Schema specifically for status updates
@@ -32,7 +41,7 @@ export const getApplications = async (req: AuthRequest, res: Response) => {
   // orderBy: { createdAt: "desc" } returns newest first.
   const applications = await prisma.application.findMany({
     where: { userId: req.userId },
-    include: { statusHistory: { orderBy: { changedAt: "asc" } } },
+    include: { statusHistory: { orderBy: { changedAt: "asc" } }, tags: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -47,12 +56,25 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // Spread parsed.data to get all validated fields,
-  // then add userId from the token (not from req.body —
-  // the client should never be able to set their own userId)
+  const { tags: tagInputs, ...appData } = parsed.data;
+
   const application = await prisma.application.create({
-    data: { ...parsed.data, userId: req.userId! },
-    include: { statusHistory: true },
+    data: {
+      ...appData,
+      userId: req.userId!,
+      // Create tags and connect them in one operation
+      tags:
+        tagInputs && tagInputs.length > 0
+          ? {
+              create: tagInputs.map((t) => ({
+                name: t.name,
+                color: t.color,
+                userId: req.userId!,
+              })),
+            }
+          : undefined,
+    },
+    include: { statusHistory: true, tags: true },
   });
 
   res.status(201).json(application);
@@ -65,7 +87,7 @@ export const getApplicationById = async (req: AuthRequest, res: Response) => {
   // If the ID exists but belongs to someone else, this returns null.
   const application = await prisma.application.findFirst({
     where: { id: String(req.params.id), userId: req.userId },
-    include: { statusHistory: { orderBy: { changedAt: "asc" } } },
+    include: { statusHistory: { orderBy: { changedAt: "asc" } }, tags: true },
   });
 
   if (!application) {
@@ -98,7 +120,7 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
   const application = await prisma.application.update({
     where: { id: String(req.params.id) },
     data: parsed.data,
-    include: { statusHistory: { orderBy: { changedAt: "asc" } } },
+    include: { statusHistory: { orderBy: { changedAt: "asc" } }, tags: true },
   });
 
   res.json(application);
@@ -131,7 +153,7 @@ export const updateApplicationStatus = async (
     prisma.application.update({
       where: { id: String(req.params.id) },
       data: { status: parsed.data.status },
-      include: { statusHistory: { orderBy: { changedAt: "asc" } } },
+      include: { statusHistory: { orderBy: { changedAt: "asc" } }, tags: true },
     }),
     prisma.statusHistory.create({
       data: {

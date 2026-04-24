@@ -74,4 +74,5 @@ model Tag {
   name         String
   color        String         @default("#6D83DD")
   applications Application[]  @relation("ApplicationTags")
+  createdAt    DateTime       @default(now())
 }

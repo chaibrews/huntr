@@ -18,10 +18,21 @@ const STATUS_OPTIONS: Status[] = [
   "OFFER",
   "REJECTED",
 ];
+
 const WORK_OPTIONS: { value: WorkSetup; label: string }[] = [
   { value: "ONSITE", label: "On-site" },
   { value: "HYBRID", label: "Hybrid" },
   { value: "REMOTE", label: "Remote" },
+];
+
+const TAG_COLORS = [
+  "#6D83DD",
+  "#806ed3",
+  "#A2C4B2",
+  "#AFAEC4",
+  "#f0a8b0",
+  "#f0c980",
+  "#6db8a2",
 ];
 
 // Reusable labeled input row — local to this file since it's form-specific
@@ -61,8 +72,22 @@ export default function ApplicationForm({
   const [url, setUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [appliedAt, setAppliedAt] = useState("");
+  const [tags, setTags] = useState<{ name: string; color: string }[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [tagColor, setTagColor] = useState(TAG_COLORS[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function addTag() {
+    const name = tagInput.trim().replace(/^#/, ""); // strip leading # if typed
+    if (!name || tags.find((t) => t.name === name)) return;
+    setTags((prev) => [...prev, { name, color: tagColor }]);
+    setTagInput("");
+  }
+
+  function removeTag(name: string) {
+    setTags((prev) => prev.filter((t) => t.name !== name));
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -78,7 +103,7 @@ export default function ApplicationForm({
         url: url || null,
         notes: notes || null,
         appliedAt: appliedAt || null,
-        tags: [],
+        tags,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -93,7 +118,7 @@ export default function ApplicationForm({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-md bg-white rounded-xl shadow-2xl border border-shadow overflow-hidden">
+      <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl border border-shadow overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-shadow">
           <div>
@@ -211,6 +236,73 @@ export default function ApplicationForm({
               placeholder="Recruiter contact, referral info, anything relevant…"
               className={`${inputClass} resize-none leading-relaxed`}
             />
+          </Field>
+
+          <Field label="Tags">
+            {/* Existing tags */}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag.name}
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium"
+                    style={{
+                      backgroundColor: tag.color + "22",
+                      color: tag.color,
+                      border: `1px solid ${tag.color}55`,
+                    }}
+                  >
+                    #{tag.name}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag.name)}
+                      className="hover:opacity-70 leading-none"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Input row */}
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
+                placeholder="e.g. #niceoffice, #dream role"
+                className={`${inputClass} flex-1`}
+              />
+              {/* Color swatches */}
+              <div className="flex gap-1 shrink-0">
+                {TAG_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setTagColor(c)}
+                    className="w-4 h-4 rounded-full border-2 transition-all shrink-0"
+                    style={{
+                      backgroundColor: c,
+                      borderColor: tagColor === c ? c : "transparent",
+                    }}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={addTag}
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-primary/15 text-primary-darker hover:bg-primary/25 transition-colors shrink-0"
+              >
+                Add
+              </button>
+            </div>
           </Field>
 
           {error && (

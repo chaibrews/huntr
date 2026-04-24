@@ -1,4 +1,4 @@
-import type { Application, Status } from "../types";
+import type { Application, Status, Tag } from "../types";
 
 const BASE = `${import.meta.env.VITE_BACKEND_URL}/api/applications`;
 
@@ -11,12 +11,16 @@ function authHeaders(): HeadersInit {
   };
 }
 
+export type TagInput = { name: string; color: string };
+
 // Defines a type for creating new applications
 // Uses Omit to remove fields that the server generates automatically
 export type CreateApplicationInput = Omit<
   Application,
-  "id" | "createdAt" | "updatedAt" | "statusHistory"
->;
+  "id" | "createdAt" | "updatedAt" | "statusHistory" | "tags"
+> & {
+  tags: TagInput[]; // ← new tags from form, no id yet
+};
 
 // Defines a type for updating applications
 // Uses Partial so all fields are optional (PATCH requests don’t require every field)
@@ -84,4 +88,46 @@ export async function deleteApplication(id: string): Promise<void> {
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to delete");
+}
+
+export async function attachTag(
+  appId: string,
+  tagId: string,
+): Promise<Application> {
+  const res = await fetch(`${BASE}/${appId}/tags/${tagId}`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to attach tag");
+  return res.json();
+}
+
+export async function detachTag(
+  appId: string,
+  tagId: string,
+): Promise<Application> {
+  const res = await fetch(`${BASE}/${appId}/tags/${tagId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to detach tag");
+  return res.json();
+}
+
+export async function createTag(name: string, color: string): Promise<Tag> {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/tags`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ name, color }),
+  });
+  if (!res.ok) throw new Error("Failed to create tag");
+  return res.json();
+}
+
+export async function getUserTags(): Promise<Tag[]> {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/tags`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch tags");
+  return res.json();
 }

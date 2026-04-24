@@ -19,6 +19,7 @@ import CompanyAvatar from "../../components/CompanyAvatar";
 import StatusPill from "../../components/StatusPill";
 import MetaCard from "../../components/MetaCard";
 import InlineEdit from "../../components/InlineEdit";
+import TagEditor from "../../components/TagEditor";
 
 const WORK_OPTIONS: { value: WorkSetup; label: string }[] = [
   { value: "ONSITE", label: "On-site" },
@@ -235,25 +236,11 @@ export default function ApplicationDetail() {
           {/* Tags + Job Posting */}
           <div className="grid grid-cols-2 gap-4">
             <MetaCard label="Tags">
-              {app.tags && app.tags.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {app.tags.map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="text-xs px-2 py-0.5 rounded-full font-medium"
-                      style={{
-                        backgroundColor: tag.color + "22",
-                        color: tag.color,
-                        border: `1px solid ${tag.color}55`,
-                      }}
-                    >
-                      #{tag.name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-foreground/30 italic">No tags yet</p>
-              )}
+              <TagEditor
+                applicationId={app.id}
+                attachedTags={app.tags}
+                onUpdate={(tags) => setApp((p) => (p ? { ...p, tags } : p))}
+              />
             </MetaCard>
 
             <MetaCard label="Job Posting">

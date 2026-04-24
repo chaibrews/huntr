@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 // Import Routes
 import authRoutes from "./routes/authRoutes";
 import applicationsRoutes from "./routes/applicationsRoutes";
+import tagsRoutes from "./routes/tagsRoutes";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/applications", applicationsRoutes);
+app.use("/api/tags", tagsRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
