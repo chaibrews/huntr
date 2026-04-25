@@ -290,31 +290,6 @@ export default function ApplicationDetail() {
               placeholder="Paste the full job description…"
             />
           </MetaCard>
-
-          {/* Application Notes */}
-          <div className="bg-white rounded-xl border border-shadow p-4 flex-1">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/40 mb-3">
-              Application Notes
-            </h3>
-            <InlineEdit
-              display={
-                app.notes ? (
-                  <p className="text-sm text-foreground/70 leading-relaxed whitespace-pre-wrap">
-                    {app.notes}
-                  </p>
-                ) : (
-                  <p className="text-sm text-foreground/30 italic">
-                    No notes yet. Hover to edit.
-                  </p>
-                )
-              }
-              value={notesDraft}
-              onChange={setNotesDraft}
-              onSave={() => handleFieldSave("notes", notesDraft)}
-              multiline
-              placeholder="Add notes about this application…"
-            />
-          </div>
         </div>
 
         {/* ── RIGHT COLUMN — timeline, docs, notes ── */}
@@ -325,9 +300,6 @@ export default function ApplicationDetail() {
               <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/40">
                 Application Timeline
               </h3>
-              <button className="secondary-button px-3 py-1 flex items-center gap-1">
-                <Plus size={12} /> Update
-              </button>
             </div>
 
             {app.statusHistory.length === 0 ? (
@@ -369,8 +341,33 @@ export default function ApplicationDetail() {
             )}
           </div>
 
-          {/* Documents (placeholder — buildR. integration Phase 2) */}
-          <div className="bg-white rounded-xl border border-shadow p-4">
+          {/* Application Notes */}
+          <div className="bg-white rounded-xl border border-shadow p-4 flex-1">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/40 mb-3">
+              Application Notes
+            </h3>
+            <InlineEdit
+              display={
+                app.notes ? (
+                  <p className="text-sm text-foreground/70 leading-relaxed whitespace-pre-wrap">
+                    {app.notes}
+                  </p>
+                ) : (
+                  <p className="text-sm text-foreground/30 italic">
+                    No notes yet. Hover to edit.
+                  </p>
+                )
+              }
+              value={notesDraft}
+              onChange={setNotesDraft}
+              onSave={() => handleFieldSave("notes", notesDraft)}
+              multiline
+              placeholder="Add notes about this application…"
+            />
+          </div>
+
+          {/* Documents (placeholder) */}
+          {/* <div className="bg-white rounded-xl border border-shadow p-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/40 mb-3">
               Documents
             </h3>
@@ -388,7 +385,7 @@ export default function ApplicationDetail() {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </AppShell>

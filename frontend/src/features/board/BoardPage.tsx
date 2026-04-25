@@ -7,6 +7,8 @@ import AppShell from "../../components/AppShell";
 import BoardColumn from "./BoardColumn";
 import ApplicationForm from "../applications/ApplicationForm";
 import { Plus, Search } from "lucide-react";
+import CompanyAvatar from "../../components/CompanyAvatar";
+import { useNavigate } from "react-router-dom";
 
 type Tab = "applications" | "offers" | "archived";
 
@@ -24,12 +26,14 @@ const TAB_STATUSES: Record<Tab, Status[]> = {
 };
 
 export default function BoardPage() {
-  const { applications, loading, error, remove, create } = useApplications();
+  const { applications, loading, error, remove, create, changeStatus } =
+    useApplications();
   const [activeTab, setActiveTab] = useState<Tab>("applications");
   const [showForm, setShowForm] = useState(false);
   const [defaultStatus, setDefaultStatus] = useState<Status>("SAVED");
   const [search, setSearch] = useState("");
 
+  const navigate = useNavigate();
   // Filtered by search term
   const filtered = applications.filter((a) => {
     if (!search) return true;
@@ -154,8 +158,10 @@ export default function BoardPage() {
                   .map((app) => (
                     <div
                       key={app.id}
-                      className="bg-white border border-shadow rounded-lg px-4 py-3 flex items-center gap-4"
+                      onClick={() => navigate(`/applications/${app.id}`)}
+                      className="bg-white border border-shadow rounded-lg px-4 py-3 flex items-center gap-4 cursor-pointer hover:shadow-sm transition-all"
                     >
+                      <CompanyAvatar company={app.company} size="sm" />
                       <span className="text-sm font-medium text-foreground">
                         {app.company}
                       </span>
@@ -167,18 +173,23 @@ export default function BoardPage() {
                           {app.location}
                         </span>
                       )}
-                      <span className="ml-auto text-xs text-foreground/40 capitalize">
-                        {app.status.toLowerCase()}
-                      </span>
+                      <div className="ml-auto flex items-center gap-3">
+                        <span className="text-xs text-foreground/40 capitalize">
+                          {app.status.toLowerCase()}
+                        </span>
+                        {/* Restore button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            changeStatus(app.id, "SAVED");
+                          }}
+                          className="text-xs px-2.5 py-1 rounded-lg bg-primary/10 text-primary-darker hover:bg-primary/20 transition-colors"
+                        >
+                          Restore
+                        </button>
+                      </div>
                     </div>
                   ))}
-                {filtered.filter((a) =>
-                  TAB_STATUSES.archived.includes(a.status),
-                ).length === 0 && (
-                  <p className="text-sm text-foreground/30 text-center py-12">
-                    Nothing here yet.
-                  </p>
-                )}
               </div>
             )}
           </>

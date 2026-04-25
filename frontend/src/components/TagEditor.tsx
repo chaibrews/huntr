@@ -160,7 +160,7 @@ export default function TagEditor({
             </div>
             <button
               onClick={handleCreate}
-              className="w-full text-xs primary-button py-1.5"
+              className="w-full text-xs secondary-button py-1.5"
             >
               Create & attach
             </button>
