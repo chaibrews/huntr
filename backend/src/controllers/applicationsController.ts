@@ -124,9 +124,25 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
     return;
   }
 
+  const { tags: tagInputs, ...updateData } = parsed.data;
+
   const application = await prisma.application.update({
     where: { id: String(req.params.id) },
-    data: parsed.data,
+    data: {
+      ...updateData,
+      ...(tagInputs
+        ? {
+            tags: {
+              deleteMany: {},
+              create: tagInputs.map((t) => ({
+                name: t.name,
+                color: t.color,
+                userId: req.userId!,
+              })),
+            },
+          }
+        : undefined),
+    },
     include: { statusHistory: { orderBy: { changedAt: "asc" } }, tags: true },
   });
 

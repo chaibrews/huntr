@@ -124,8 +124,6 @@ export default function ApplicationDetail() {
       </AppShell>
     );
 
-  const statusStyle = STATUS_STYLES[app.status];
-
   return (
     <AppShell
       headerLeft={
@@ -308,7 +306,7 @@ export default function ApplicationDetail() {
               </p>
             ) : (
               <div className="flex flex-col gap-3">
-                {[...app.statusHistory].reverse().map((h, i) => {
+                {[...app.statusHistory].reverse().map((h) => {
                   const toCfg = STATUS_STYLES[h.to];
                   const date = new Date(h.changedAt);
                   const dayOfMonth = date.getDate();
