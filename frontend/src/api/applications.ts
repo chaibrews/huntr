@@ -18,9 +18,7 @@ export type TagInput = { name: string; color: string };
 export type CreateApplicationInput = Omit<
   Application,
   "id" | "createdAt" | "updatedAt" | "statusHistory" | "tags"
-> & {
-  tags: TagInput[]; // ← new tags from form, no id yet
-};
+>;
 
 // Defines a type for updating applications
 // Uses Partial so all fields are optional (PATCH requests don’t require every field)
