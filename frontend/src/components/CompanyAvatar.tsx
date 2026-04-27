@@ -31,7 +31,7 @@ export default function CompanyAvatar({ company, size = "md" }: Props) {
 
   return (
     <div
-      className={`${SIZE_CLASSES[size]} rounded-full flex items-center justify-center font-bold flex-shrink-0`}
+      className={`${SIZE_CLASSES[size]} rounded-lg flex items-center justify-center font-bold flex-shrink-0`}
       style={{ backgroundColor: bg, color: fg }}
     >
       {initial}

@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MapPin, Trash2 } from "lucide-react";
+import { Briefcase, Building, MapPin, Trash2 } from "lucide-react";
 import type { Application, Status, WorkSetup } from "../../types";
 import { getApplicationById } from "../../api/applications";
 import { useApplications } from "../../hooks/useApplications";
@@ -149,16 +149,7 @@ export default function ApplicationDetail() {
         <div className="flex-1 min-w-0">
           <InlineEdit
             display={
-              <p className="text-xs text-foreground/50 mb-0.5">{app.company}</p>
-            }
-            value={companyDraft}
-            onChange={setCompanyDraft}
-            onSave={() => handleFieldSave("company", companyDraft)}
-            placeholder="Company name"
-          />
-          <InlineEdit
-            display={
-              <h1 className="text-xl font-semibold text-foreground leading-tight">
+              <h1 className="text-xl font-medium text-foreground leading-tight mb-0.5">
                 {app.role}
               </h1>
             }
@@ -169,13 +160,24 @@ export default function ApplicationDetail() {
           />
           <InlineEdit
             display={
+              <p className="text-[14px] font-medium text-foreground/50">
+                {app.company}
+              </p>
+            }
+            value={companyDraft}
+            onChange={setCompanyDraft}
+            onSave={() => handleFieldSave("company", companyDraft)}
+            placeholder="Company name"
+          />
+          <InlineEdit
+            display={
               app.location ? (
-                <p className="text-sm text-foreground/50 flex items-center gap-1 mt-1">
-                  <MapPin size={13} />
+                <p className="text-xs text-foreground/50 flex items-center ">
+                  <MapPin size={13} className="inline -mt-0.5 mr-1" />
                   {app.location}
                 </p>
               ) : (
-                <p className="text-sm text-foreground/30 italic mt-1">
+                <p className="text-xs text-foreground/30 italic">
                   Add location…
                 </p>
               )
@@ -183,7 +185,7 @@ export default function ApplicationDetail() {
             value={locationDraft}
             onChange={setLocationDraft}
             onSave={() => handleFieldSave("location", locationDraft)}
-            placeholder="City, Country"
+            placeholder="Area, City"
           />
         </div>
         <StatusPill status={app.status} />

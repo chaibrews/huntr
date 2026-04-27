@@ -31,7 +31,7 @@ export default function AppCard({ app, onDelete, onArchive }: Props) {
   return (
     <div
       onClick={() => navigate(`/applications/${app.id}`)}
-      className="bg-white rounded-xl p-4 cursor-pointer
+      className="bg-white/50 rounded-xl p-4 cursor-pointer border border-primary/20
                  hover:shadow-md hover:border-primary/30 transition-all duration-150 group"
     >
       {/* Top row: avatar + company + location + menu */}
@@ -39,13 +39,19 @@ export default function AppCard({ app, onDelete, onArchive }: Props) {
         <div className="flex items-center gap-2.5 min-w-0">
           <CompanyAvatar company={app.company} size="sm" />
           <div className="min-w-0">
-            <p className="text-[12px] font-medium text-foreground truncate">
+            <p className="text-sm uppercase font-medium text-foreground truncate">
               {app.company}
             </p>
             {app.location && (
-              <p className="text-xs text-foreground/40 truncate">
-                {app.location}
-              </p>
+              <div className="text-xs text-foreground/40 truncate flex items-center gap-1">
+                <span>{app.location}</span>
+                {/* Work Setup */}
+                {app.workSetup && (
+                  <span className="capitalize">
+                    | {app.workSetup.toLowerCase()}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -100,17 +106,17 @@ export default function AppCard({ app, onDelete, onArchive }: Props) {
       </div>
 
       {/* Role */}
-      <p className="text-[16px] font-medium text-foreground leading-snug">
+      <p className="text-[16px] font-normal text-foreground leading-snug">
         {app.role}
       </p>
 
       {/* Tags */}
       {app.tags && app.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
+        <div className="flex flex-wrap gap-1.5 mt-2">
           {app.tags.map((tag) => (
             <span
               key={tag.id}
-              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              className="text-[10px] px-2 py-0.5 rounded-full font-medium"
               style={{
                 backgroundColor: tag.color + "22",
                 color: tag.color,

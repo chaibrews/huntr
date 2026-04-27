@@ -89,7 +89,7 @@ export default function BoardPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Find by company, role, or tag…"
-              className="pl-9 pr-4 py-2 text-sm bg-white border border-shadow rounded-lg 
+              className="pl-9 pr-4 py-2 text-sm bg-white/40 border border-shadow rounded-lg 
                        w-xl focus:outline-none focus:border-primary-darker/40 transition-colors"
             />
           </div>
@@ -174,7 +174,7 @@ export default function BoardPage() {
                     <div
                       key={app.id}
                       onClick={() => navigate(`/applications/${app.id}`)}
-                      className="bg-white border border-shadow rounded-lg px-4 py-3 flex items-center gap-4 cursor-pointer hover:shadow-sm transition-all"
+                      className="bg-white/40 border border-shadow rounded-lg px-4 py-3 flex items-center gap-4 cursor-pointer hover:shadow-sm transition-all"
                     >
                       <CompanyAvatar company={app.company} size="sm" />
                       <span className="text-sm font-medium text-foreground">

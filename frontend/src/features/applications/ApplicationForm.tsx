@@ -60,7 +60,8 @@ export default function ApplicationForm({
   const [workSetup, setWorkSetup] = useState<WorkSetup | "">("");
   const [location, setLocation] = useState("");
   const [url, setUrl] = useState("");
-  const [notes, setNotes] = useState("");
+  // const [notes, setNotes] = useState("");
+  const [description, setDescription] = useState("");
   const [appliedAt, setAppliedAt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -137,16 +138,6 @@ export default function ApplicationForm({
             </Field>
           </div>
 
-          <Field label="Job Posting URL">
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://..."
-              className={inputClass}
-            />
-          </Field>
-
           <div className="grid grid-cols-2 gap-3">
             <Field label="Location">
               <input
@@ -203,6 +194,26 @@ export default function ApplicationForm({
             )}
           </div>
 
+          <Field label="Job Posting URL">
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://..."
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Job Description">
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder="Paste the job description or key details here for easy reference."
+              className={`${inputClass} resize-none leading-relaxed`}
+            />
+          </Field>
+          {/* 
           <Field label="Application Notes">
             <textarea
               value={notes}
@@ -211,7 +222,7 @@ export default function ApplicationForm({
               placeholder="Recruiter contact, referral info, anything relevant…"
               className={`${inputClass} resize-none leading-relaxed`}
             />
-          </Field>
+          </Field> */}
 
           {error && (
             <p className="text-xs text-red-400 bg-red-50 rounded-lg px-3 py-2 border border-red-100">
