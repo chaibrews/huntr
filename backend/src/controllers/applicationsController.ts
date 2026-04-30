@@ -3,9 +3,16 @@ import { z } from "zod";
 import { prisma } from "../libs/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 
+function flattenApplication(app: any) {
+  const { company, ...rest } = app;
+  return {
+    ...rest,
+    company: company.name,
+    location: company.location ?? null,
+  };
+}
+
 // Validation schema for creating/updating an application.
-// .optional() means the field can be omitted entirely.
-// .nullable() means the field can be explicitly set to null.
 const ApplicationBody = z.object({
   company: z.string().min(1),
   role: z.string().min(1),
@@ -17,6 +24,7 @@ const ApplicationBody = z.object({
   appliedAt: z.string().datetime().nullable().optional(),
   url: z.string().url().nullable().optional(),
   notes: z.string().nullable().optional(),
+  jobDescription: z.string().nullable().optional(),
   // Tags sent from the form as inline objects
   tags: z
     .array(
@@ -42,17 +50,19 @@ const StatusBody = z.object({
 
 // ── GET ALL ───────────────────────────────────────────
 export const getApplications = async (req: AuthRequest, res: Response) => {
-  // findMany fetches all rows matching the where clause.
-  // where: { userId: req.userId } means only this user's applications.
-  // include: { statusHistory } joins the related StatusHistory rows.
-  // orderBy: { createdAt: "desc" } returns newest first.
   const applications = await prisma.application.findMany({
     where: { userId: req.userId },
-    include: { statusHistory: { orderBy: { changedAt: "asc" } }, tags: true },
+    include: {
+      statusHistory: { orderBy: { changedAt: "asc" } },
+      tags: true,
+      company: {
+        select: { name: true, location: true },
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  res.json(applications);
+  res.json(applications.map(flattenApplication));
 };
 
 // ── CREATE ────────────────────────────────────────────
@@ -65,11 +75,30 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
 
   const { tags: tagInputs, ...appData } = parsed.data;
 
+  let company = await prisma.company.findFirst({
+    where: { name: appData.company },
+  });
+
+  if (company) {
+    if (appData.location !== company.location) {
+      company = await prisma.company.update({
+        where: { id: company.id },
+        data: { location: appData.location },
+      });
+    }
+  } else {
+    company = await prisma.company.create({
+      data: { name: appData.company, location: appData.location },
+    });
+  }
+
+  const { company: companyName, location, ...appFields } = appData;
+
   const application = await prisma.application.create({
     data: {
-      ...appData,
+      ...appFields,
       userId: req.userId!,
-      // Create tags and connect them in one operation
+      companyId: company.id,
       tags:
         tagInputs && tagInputs.length > 0
           ? {
@@ -81,20 +110,27 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
             }
           : undefined,
     },
-    include: { statusHistory: true, tags: true },
+    include: {
+      statusHistory: true,
+      tags: true,
+      company: { select: { name: true, location: true } },
+    },
   });
 
-  res.status(201).json(application);
+  res.status(201).json(flattenApplication(application));
 };
 
 // ── GET ONE ───────────────────────────────────────────
 export const getApplicationById = async (req: AuthRequest, res: Response) => {
-  // findFirst with both id AND userId — this prevents a user from
-  // accessing another user's application by guessing the ID.
-  // If the ID exists but belongs to someone else, this returns null.
   const application = await prisma.application.findFirst({
     where: { id: String(req.params.id), userId: req.userId },
-    include: { statusHistory: { orderBy: { changedAt: "asc" } }, tags: true },
+    include: {
+      statusHistory: { orderBy: { changedAt: "asc" } },
+      tags: true,
+      company: {
+        select: { name: true, location: true },
+      },
+    },
   });
 
   if (!application) {
@@ -102,7 +138,7 @@ export const getApplicationById = async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  res.json(application);
+  res.json(flattenApplication(application));
 };
 
 // ── UPDATE FIELDS ─────────────────────────────────────
@@ -143,10 +179,14 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
           }
         : undefined),
     },
-    include: { statusHistory: { orderBy: { changedAt: "asc" } }, tags: true },
+    include: {
+      statusHistory: { orderBy: { changedAt: "asc" } },
+      tags: true,
+      company: { select: { name: true, location: true } },
+    },
   });
 
-  res.json(application);
+  res.json(flattenApplication(application));
 };
 
 // ── UPDATE STATUS ─────────────────────────────────────
@@ -176,7 +216,11 @@ export const updateApplicationStatus = async (
     prisma.application.update({
       where: { id: String(req.params.id) },
       data: { status: parsed.data.status },
-      include: { statusHistory: { orderBy: { changedAt: "asc" } }, tags: true },
+      include: {
+        statusHistory: { orderBy: { changedAt: "asc" } },
+        tags: true,
+        company: { select: { name: true, location: true } },
+      },
     }),
     prisma.statusHistory.create({
       data: {
@@ -187,7 +231,7 @@ export const updateApplicationStatus = async (
     }),
   ]);
 
-  res.json(application);
+  res.json(flattenApplication(application));
 };
 
 // ── DELETE ─────────────────────────────────────────────

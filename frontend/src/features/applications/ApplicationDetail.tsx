@@ -52,7 +52,7 @@ export default function ApplicationDetail() {
         setCompanyDraft(data.company);
         setRoleDraft(data.role);
         setLocationDraft(data.location ?? "");
-        setJobDescDraft((data as any).jobDescription ?? "");
+        setJobDescDraft(data.jobDescription ?? "");
       })
       .catch(() => setError("Application not found"))
       .finally(() => setLoading(false));

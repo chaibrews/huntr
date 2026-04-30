@@ -61,7 +61,7 @@ export default function ApplicationForm({
   const [location, setLocation] = useState("");
   const [url, setUrl] = useState("");
   const [notes, setNotes] = useState("");
-  // const [description, setDescription] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
   const [appliedAt, setAppliedAt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +79,7 @@ export default function ApplicationForm({
         location: location || null,
         url: url || null,
         notes: notes || null,
+        jobDescription: jobDescription || null,
         appliedAt: appliedAt || null,
       });
     } catch (err) {
@@ -203,16 +204,16 @@ export default function ApplicationForm({
               className={inputClass}
             />
           </Field>
-          {/* 
+
           <Field label="Job Description">
             <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
               rows={3}
               placeholder="Paste the job description or key details here for easy reference."
               className={`${inputClass} resize-none leading-relaxed`}
             />
-          </Field> */}
+          </Field>
 
           <Field label="Application Notes">
             <textarea

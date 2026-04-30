@@ -10,6 +10,7 @@ export type WorkSetup = "ONSITE" | "HYBRID" | "REMOTE";
 
 export interface Application {
   id: string;
+  companyId: string;
   company: string;
   role: string;
   status: Status;
@@ -17,6 +18,7 @@ export interface Application {
   location: string | null;
   appliedAt: string | null;
   url: string | null;
+  jobDescription: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
