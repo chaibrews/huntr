@@ -1,4 +1,4 @@
-import type { Application, Status, Tag } from "../types";
+import type { Application, Status, Tag, WorkSetup } from "../types";
 
 const BASE = `${import.meta.env.VITE_BACKEND_URL}/api/applications`;
 
@@ -15,10 +15,18 @@ export type TagInput = { name: string; color: string };
 
 // Defines a type for creating new applications
 // Uses Omit to remove fields that the server generates automatically
-export type CreateApplicationInput = Omit<
-  Application,
-  "id" | "createdAt" | "updatedAt" | "statusHistory" | "tags"
->;
+export type CreateApplicationInput = {
+  company: string;
+  role: string;
+  status: Status;
+  workSetup: WorkSetup | null;
+  location: string | null;
+  appliedAt: string | null;
+  url: string | null;
+  notes: string | null;
+  jobDescription: string | null;
+  tags?: TagInput[];
+};
 
 // Defines a type for updating applications
 // Uses Partial so all fields are optional (PATCH requests don’t require every field)

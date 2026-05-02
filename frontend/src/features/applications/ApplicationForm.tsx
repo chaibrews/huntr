@@ -209,7 +209,7 @@ export default function ApplicationForm({
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
-              rows={3}
+              rows={2}
               placeholder="Paste the job description or key details here for easy reference."
               className={`${inputClass} resize-none leading-relaxed`}
             />
@@ -219,7 +219,7 @@ export default function ApplicationForm({
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+              rows={2}
               placeholder="Recruiter contact, referral info, anything relevant…"
               className={`${inputClass} resize-none leading-relaxed`}
             />
