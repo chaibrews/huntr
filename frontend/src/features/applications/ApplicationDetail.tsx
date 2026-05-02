@@ -42,6 +42,7 @@ export default function ApplicationDetail() {
   const [roleDraft, setRoleDraft] = useState("");
   const [locationDraft, setLocationDraft] = useState("");
   const [jobDescDraft, setJobDescDraft] = useState("");
+  const [companyNotesDraft, setCompanyNotesDraft] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -53,6 +54,7 @@ export default function ApplicationDetail() {
         setRoleDraft(data.role);
         setLocationDraft(data.location ?? "");
         setJobDescDraft(data.jobDescription ?? "");
+        setCompanyNotesDraft(data.companyNotes ?? "");
       })
       .catch(() => setError("Application not found"))
       .finally(() => setLoading(false));
@@ -90,6 +92,11 @@ export default function ApplicationDetail() {
     if (field === "company") setCompanyDraft(updated.company);
     if (field === "role") setRoleDraft(updated.role);
     if (field === "location") setLocationDraft(updated.location ?? "");
+    if (field === "jobDescription")
+      setJobDescDraft(updated.jobDescription ?? "");
+    if (field === "notes") setNotesDraft(updated.notes ?? "");
+    if (field === "companyNotes")
+      setCompanyNotesDraft(updated.companyNotes ?? "");
   }
 
   async function handleDelete() {
@@ -193,7 +200,7 @@ export default function ApplicationDetail() {
 
       {/* ── TWO-COLUMN LAYOUT ── */}
       <div className="grid grid-cols-[1fr_300px] gap-5">
-        {/* ── LEFT COLUMN — meta fields ── */}
+        {/* ── LEFT COLUMN */}
         <div className="flex flex-col gap-4">
           {/* Status + Work Setup */}
           <div className="grid grid-cols-2 gap-4">
@@ -233,7 +240,7 @@ export default function ApplicationDetail() {
             </MetaCard>
           </div>
 
-          {/* Tags + Job Posting */}
+          {/* Tags + Job Posting URL */}
           <div className="grid grid-cols-2 gap-4">
             <MetaCard label="Tags">
               <TagInput
@@ -245,7 +252,7 @@ export default function ApplicationDetail() {
               />
             </MetaCard>
 
-            <MetaCard label="Job Posting">
+            <MetaCard label="Job Posting URL">
               <InlineEdit
                 display={
                   app.url ? (
@@ -258,7 +265,7 @@ export default function ApplicationDetail() {
                       {app.url.replace(/^https?:\/\//, "")}
                     </a>
                   ) : (
-                    <p className="text-sm text-foreground/30 italic">
+                    <p className="text-xs text-foreground/30 italic">
                       No link saved
                     </p>
                   )
@@ -280,7 +287,7 @@ export default function ApplicationDetail() {
                     {jobDescDraft}
                   </p>
                 ) : (
-                  <p className="text-sm text-foreground/30 italic">
+                  <p className="text-xs text-foreground/30 italic">
                     Paste the job description here…
                   </p>
                 )
@@ -294,10 +301,10 @@ export default function ApplicationDetail() {
           </MetaCard>
         </div>
 
-        {/* ── RIGHT COLUMN — timeline, docs, notes ── */}
+        {/* ── RIGHT COLUMN ── */}
         <div className="flex flex-col gap-4">
           {/* Application Timeline */}
-          <div className="bg-white rounded-xl border border-shadow p-4">
+          <div className="bg-white rounded-lg border border-shadow p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/40">
                 Application Timeline
@@ -343,19 +350,36 @@ export default function ApplicationDetail() {
             )}
           </div>
 
-          {/* Application Notes */}
-          <div className="bg-white rounded-xl border border-shadow p-4 flex-1">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/40 mb-3">
-              Application Notes
-            </h3>
+          <MetaCard label="Company Notes">
             <InlineEdit
               display={
-                app.notes ? (
+                app.companyNotes ? (
                   <p className="text-sm text-foreground/70 leading-relaxed whitespace-pre-wrap">
-                    {app.notes}
+                    {app.companyNotes}
                   </p>
                 ) : (
-                  <p className="text-sm text-foreground/30 italic">
+                  <p className="text-xs text-foreground/30 italic">
+                    Notes about this company…
+                  </p>
+                )
+              }
+              value={companyNotesDraft}
+              onChange={setCompanyNotesDraft}
+              onSave={() => handleFieldSave("companyNotes", companyNotesDraft)}
+              multiline
+              placeholder="Add notes about this company..."
+            />
+          </MetaCard>
+
+          <MetaCard label="Application Notes">
+            <InlineEdit
+              display={
+                notesDraft ? (
+                  <p className="text-sm text-foreground/70 leading-relaxed whitespace-pre-wrap">
+                    {notesDraft}
+                  </p>
+                ) : (
+                  <p className="text-xs text-foreground/30 italic">
                     No notes yet. Hover to edit.
                   </p>
                 )
@@ -366,28 +390,7 @@ export default function ApplicationDetail() {
               multiline
               placeholder="Add notes about this application…"
             />
-          </div>
-
-          {/* Documents (placeholder) */}
-          {/* <div className="bg-white rounded-xl border border-shadow p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/40 mb-3">
-              Documents
-            </h3>
-            <div className="flex flex-col gap-2">
-              {["Resume", "Cover Letter"].map((doc) => (
-                <button
-                  key={doc}
-                  className="flex items-center gap-2.5 text-xs text-foreground/50
-                             hover:text-primary-darker transition-colors py-1"
-                >
-                  <FileText size={14} className="text-primary/60" />
-                  <span className="font-medium uppercase tracking-wider">
-                    {doc}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div> */}
+          </MetaCard>
         </div>
       </div>
     </AppShell>

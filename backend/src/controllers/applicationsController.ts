@@ -3,12 +3,15 @@ import { z } from "zod";
 import { prisma } from "../libs/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 
+// Takes a full application object (with nested company)
+// and flattens it into a simpler shape.
 function flattenApplication(app: any) {
   const { company, ...rest } = app;
   return {
     ...rest,
     company: company.name,
     location: company.location ?? null,
+    companyNotes: company.notes ?? null,
   };
 }
 
@@ -24,8 +27,8 @@ const ApplicationBody = z.object({
   appliedAt: z.string().datetime().nullable().optional(),
   url: z.string().url().nullable().optional(),
   notes: z.string().nullable().optional(),
+  companyNotes: z.string().nullable().optional(),
   jobDescription: z.string().nullable().optional(),
-  // Tags sent from the form as inline objects
   tags: z
     .array(
       z.object({
@@ -56,7 +59,7 @@ export const getApplications = async (req: AuthRequest, res: Response) => {
       statusHistory: { orderBy: { changedAt: "asc" } },
       tags: true,
       company: {
-        select: { name: true, location: true },
+        select: { name: true, location: true, notes: true },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -83,16 +86,25 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
     if (appData.location !== company.location) {
       company = await prisma.company.update({
         where: { id: company.id },
-        data: { location: appData.location },
+        data: { location: appData.location, notes: appData.companyNotes },
       });
     }
   } else {
     company = await prisma.company.create({
-      data: { name: appData.company, location: appData.location },
+      data: {
+        name: appData.company,
+        location: appData.location,
+        notes: appData.companyNotes,
+      },
     });
   }
 
-  const { company: companyName, location, ...appFields } = appData;
+  const {
+    company: companyName,
+    location,
+    companyNotes,
+    ...appFields
+  } = appData;
 
   const application = await prisma.application.create({
     data: {
@@ -113,7 +125,7 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
     include: {
       statusHistory: true,
       tags: true,
-      company: { select: { name: true, location: true } },
+      company: { select: { name: true, location: true, notes: true } },
     },
   });
 
@@ -128,7 +140,7 @@ export const getApplicationById = async (req: AuthRequest, res: Response) => {
       statusHistory: { orderBy: { changedAt: "asc" } },
       tags: true,
       company: {
-        select: { name: true, location: true },
+        select: { name: true, location: true, notes: true },
       },
     },
   });
@@ -163,16 +175,22 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
     tags: tagInputs,
     company: companyName,
     location,
+    companyNotes,
     ...appFields
   } = parsed.data;
 
-  // If company name or location changed, update the Company record
-  if (companyName !== undefined || location !== undefined) {
+  // If company name or location or notes changed, update the Company record
+  if (
+    companyName !== undefined ||
+    location !== undefined ||
+    companyNotes !== undefined
+  ) {
     await prisma.company.update({
       where: { id: existing.companyId },
       data: {
         ...(companyName !== undefined && { name: companyName }),
         ...(location !== undefined && { location }),
+        ...(companyNotes !== undefined && { notes: companyNotes }),
       },
     });
   }
@@ -180,7 +198,7 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
   const application = await prisma.application.update({
     where: { id: String(req.params.id) },
     data: {
-      ...appFields, // ← clean now: no company string, no location
+      ...appFields,
       ...(tagInputs
         ? {
             tags: {
@@ -197,7 +215,7 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
     include: {
       statusHistory: { orderBy: { changedAt: "asc" } },
       tags: true,
-      company: { select: { name: true, location: true } },
+      company: { select: { name: true, location: true, notes: true } },
     },
   });
 
@@ -234,7 +252,7 @@ export const updateApplicationStatus = async (
       include: {
         statusHistory: { orderBy: { changedAt: "asc" } },
         tags: true,
-        company: { select: { name: true, location: true } },
+        company: { select: { name: true, location: true, notes: true } },
       },
     }),
     prisma.statusHistory.create({

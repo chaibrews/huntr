@@ -20,6 +20,7 @@ export interface Application {
   url: string | null;
   jobDescription: string | null;
   notes: string | null;
+  companyNotes: string | null;
   createdAt: string;
   updatedAt: string;
   statusHistory: StatusHistory[];

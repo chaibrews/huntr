@@ -61,6 +61,7 @@ model Application {
 model Company {
   id          String    @id @default(uuid())
   name        String
+  notes       String?
   location    String?
   createdAt   DateTime  @default(now())
 

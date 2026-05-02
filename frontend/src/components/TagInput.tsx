@@ -28,7 +28,8 @@ export default function TagInput({ value, onChange, className }: Props) {
   }, []);
   const suggestions = allTags.filter(
     (t) =>
-      t.name.toLowerCase().includes(input.toLowerCase()) &&
+      input.length > 0 &&
+      t.name.toLowerCase().startsWith(input.toLowerCase()) && // prefix match
       !value.some((v) => v.name.toLowerCase() === t.name.toLowerCase()),
   );
 
