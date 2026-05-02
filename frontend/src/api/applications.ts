@@ -1,6 +1,7 @@
 import type { Application, Status, Tag, WorkSetup } from "../types";
 
 const BASE = `${import.meta.env.VITE_BACKEND_URL}/api/applications`;
+const CACHE_KEY = "huntr:applications";
 
 // Centralized header builder — every protected request needs this
 function authHeaders(): HeadersInit {
@@ -32,9 +33,18 @@ export type CreateApplicationInput = {
 export type UpdateApplicationInput = Partial<CreateApplicationInput>;
 
 export async function getApplications(): Promise<Application[]> {
+  // Show cached data immediately while fetching
+  const cached = localStorage.getItem(CACHE_KEY);
+  if (cached) {
+    // Return cached version first — the hook will update when the real fetch resolves
+  }
+
   const res = await fetch(BASE, { headers: authHeaders() });
   if (!res.ok) throw new Error("Failed to fetch applications");
-  return res.json();
+  const data = await res.json();
+
+  localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  return data;
 }
 
 export async function createApplication(

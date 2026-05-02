@@ -7,12 +7,20 @@ import type {
 } from "../api/applications";
 
 export function useApplications() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [applications, setApplications] = useState<Application[]>(() => {
+    try {
+      const cached = localStorage.getItem("huntr:applications");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    const cached = localStorage.getItem("huntr:applications");
+    return !cached; // only show spinner on first ever load
+  });
   const [error, setError] = useState<string | null>(null);
 
-  // useCallback memoizes the function so it doesn't get recreated
-  // on every render — important because it's used in useEffect below
   const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
@@ -26,40 +34,104 @@ export function useApplications() {
     }
   }, []);
 
-  // Fetch on mount
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    // loading is only true if we have no cached data
+    if (applications.length === 0) setLoading(true);
 
-  // After each mutation (create/update/delete) we update local state
-  // directly instead of refetching everything — keeps the UI snappy
+    api
+      .getApplications()
+      .then((data) => {
+        setApplications(data);
+        localStorage.setItem("huntr:applications", JSON.stringify(data));
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   async function create(data: CreateApplicationInput) {
-    const app = await api.createApplication(data);
-    setApplications((prev) => [app, ...prev]);
-    return app;
+    // For create we don't have an ID yet, so we use a temp one
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: Application = {
+      ...data,
+      id: tempId,
+      companyId: "",
+      companyNotes: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      statusHistory: [],
+      tags: data.tags?.map((t, i) => ({ ...t, id: `temp-tag-${i}` })) ?? [],
+    };
+
+    setApplications((prev) => [optimistic, ...prev]);
+
+    try {
+      const created = await api.createApplication(data);
+      // Replace the temp entry with the real one
+      setApplications((prev) =>
+        prev.map((a) => (a.id === tempId ? created : a)),
+      );
+      return created;
+    } catch (err) {
+      // Remove the temp entry on failure
+      setApplications((prev) => prev.filter((a) => a.id !== tempId));
+      throw err;
+    }
   }
 
   async function update(id: string, data: UpdateApplicationInput) {
-    const app = await api.updateApplication(id, data);
-    setApplications((prev) => prev.map((a) => (a.id === id ? app : a)));
-    return app;
+    const previous = applications;
+    setApplications((prev) =>
+      prev.map((a) => {
+        if (a.id !== id) return a;
+        const { tags, ...rest } = data;
+        return {
+          ...a,
+          ...rest,
+          // TagInput doesn't have id — keep existing tags optimistically
+          // the real Tag[] comes back from the server response
+          ...(tags
+            ? { tags: tags.map((t, i) => ({ ...t, id: `temp-${i}` })) }
+            : {}),
+        } as Application;
+      }),
+    );
+    try {
+      const updated = await api.updateApplication(id, data);
+      setApplications((prev) => prev.map((a) => (a.id === id ? updated : a)));
+      return updated;
+    } catch (err) {
+      setApplications(previous);
+      throw err;
+    }
   }
 
   async function changeStatus(id: string, status: Status) {
-    const app = await api.updateApplicationStatus(id, status);
-    setApplications((prev) => prev.map((a) => (a.id === id ? app : a)));
-    return app;
+    const previous = applications;
+    setApplications((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status } : a)),
+    );
+    try {
+      const updated = await api.updateApplicationStatus(id, status);
+      setApplications((prev) => prev.map((a) => (a.id === id ? updated : a)));
+      return updated;
+    } catch (err) {
+      setApplications(previous);
+      throw err;
+    }
   }
 
   async function remove(id: string) {
-    await api.deleteApplication(id);
+    const previous = applications;
     setApplications((prev) => prev.filter((a) => a.id !== id));
+    try {
+      await api.deleteApplication(id);
+    } catch (err) {
+      setApplications(previous);
+      throw err;
+    }
   }
 
   async function archive(id: string) {
-    const app = await api.updateApplicationStatus(id, "ARCHIVED");
-    setApplications((prev) => prev.map((a) => (a.id === id ? app : a)));
+    return changeStatus(id, "ARCHIVED");
   }
 
   return {

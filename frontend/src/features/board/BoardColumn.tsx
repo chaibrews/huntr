@@ -4,6 +4,7 @@
 import { Plus } from "lucide-react";
 import type { Application, Status } from "../../types";
 import AppCard from "../../components/AppCard";
+import { memo } from "react";
 
 interface Props {
   status: Status;
@@ -14,7 +15,7 @@ interface Props {
   onAddClick?: (status: Status) => void;
 }
 
-export default function BoardColumn({
+function BoardColumn({
   status,
   label,
   applications,
@@ -64,3 +65,5 @@ export default function BoardColumn({
     </div>
   );
 }
+
+export default memo(BoardColumn);

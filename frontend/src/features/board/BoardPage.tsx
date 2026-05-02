@@ -1,5 +1,4 @@
-import { useState } from "react";
-// import { useAuth } from "../../hooks/useAuth";
+import { useState, useCallback, useMemo } from "react";
 import type { Status, Application } from "../../types";
 import { useApplications } from "../../hooks/useApplications";
 import { KANBAN_STATUSES, STATUS_LABELS } from "../../constants/status";
@@ -41,27 +40,42 @@ export default function BoardPage() {
   const [defaultStatus, setDefaultStatus] = useState<Status>("SAVED");
   const [search, setSearch] = useState("");
   const { user } = useAuthContext();
-
   const navigate = useNavigate();
+
+  const handleDelete = useCallback((id: string) => remove(id), [remove]);
+  const handleArchive = useCallback((id: string) => archive(id), [archive]);
+  const handleAddClick = useCallback(
+    (status: Status) => openForm(status),
+    [openForm],
+  );
+
   // Filtered by search term
-  const filtered = applications.filter((a) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      a.company.toLowerCase().includes(q) ||
-      a.role.toLowerCase().includes(q) ||
-      (a.location ?? "").toLowerCase().includes(q) ||
-      a.tags?.some((tag) => tag.name.toLowerCase().includes(q))
-    );
-  });
+  const filtered = useMemo(
+    () =>
+      applications.filter((a) => {
+        if (!search) return true;
+        const q = search.toLowerCase();
+        return (
+          a.company.toLowerCase().includes(q) ||
+          a.role.toLowerCase().includes(q) ||
+          (a.location ?? "").toLowerCase().includes(q) ||
+          a.tags?.some((tag) => tag.name.toLowerCase().includes(q))
+        );
+      }),
+    [applications, search],
+  );
 
   // Group all applications by status
-  const grouped = KANBAN_STATUSES.reduce<Record<Status, Application[]>>(
-    (acc, status) => {
-      acc[status] = filtered.filter((a) => a.status === status);
-      return acc;
-    },
-    {} as Record<Status, Application[]>,
+  const grouped = useMemo(
+    () =>
+      KANBAN_STATUSES.reduce<Record<Status, Application[]>>(
+        (acc, status) => {
+          acc[status] = filtered.filter((a) => a.status === status);
+          return acc;
+        },
+        {} as Record<Status, Application[]>,
+      ),
+    [filtered],
   );
 
   // Which statuses to show in current tab
@@ -127,9 +141,32 @@ export default function BoardPage() {
         </div>
 
         {/* ── BOARD ── */}
+
         {loading && (
-          <p className="text-sm text-primary text-center py-12">Loading…</p>
+          <div
+            className="grid gap-5"
+            style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}
+          >
+            {[1, 2, 3].map((col) => (
+              <div key={col} className="flex flex-col gap-3">
+                <div className="h-6 w-24 bg-primary/10 rounded-md animate-pulse" />
+                {[1, 2, 3].map((row) => (
+                  <div
+                    key={row}
+                    className="bg-white/50 rounded-xl p-4 animate-pulse"
+                  >
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10" />
+                      <div className="h-4 w-28 bg-primary/10 rounded" />
+                    </div>
+                    <div className="h-4 w-40 bg-primary/10 rounded" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         )}
+
         {error && (
           <p className="text-sm text-red-400 text-center py-12">{error}</p>
         )}
@@ -150,9 +187,9 @@ export default function BoardPage() {
                     status={status}
                     label={STATUS_LABELS[status]}
                     applications={grouped[status] ?? []}
-                    onDelete={remove}
-                    onArchive={archive}
-                    onAddClick={openForm}
+                    onDelete={handleDelete}
+                    onArchive={handleArchive}
+                    onAddClick={handleAddClick}
                   />
                 ))}
               </div>
@@ -216,9 +253,9 @@ export default function BoardPage() {
             defaultStatus={defaultStatus}
             onClose={() => setShowForm(false)}
             onCreate={async (data) => {
+              setShowForm(false); // close the modal instantly
               try {
                 await create(data); // call the hook’s create function
-                setShowForm(false); // close the modal after success
               } catch (err) {
                 console.error("Failed to create application", err);
               }

@@ -2,6 +2,8 @@
 // Color is derived deterministically from the company name so it's
 // always consistent for the same company across cards and detail views.
 
+import { memo } from "react";
+
 interface Props {
   company: string;
   size?: "sm" | "md" | "lg";
@@ -24,7 +26,7 @@ const SIZE_CLASSES = {
   lg: "w-14 h-14 text-xl",
 };
 
-export default function CompanyAvatar({ company, size = "md" }: Props) {
+function CompanyAvatar({ company, size = "md" }: Props) {
   const idx = company.charCodeAt(0) % PALETTES.length;
   const { bg, fg } = PALETTES[idx];
   const initial = company[0]?.toUpperCase() ?? "?";
@@ -38,3 +40,5 @@ export default function CompanyAvatar({ company, size = "md" }: Props) {
     </div>
   );
 }
+
+export default memo(CompanyAvatar);

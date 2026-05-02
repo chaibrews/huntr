@@ -230,7 +230,7 @@ export default function ApplicationForm({
             <div
               className={`grid gap-3 ${status !== "SAVED" ? "grid-cols-2" : "grid-cols-1"}`}
             >
-              <Field label="Application Status">
+              <Field label="Status">
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as Status)}

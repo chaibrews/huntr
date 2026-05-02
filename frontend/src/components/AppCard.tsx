@@ -2,7 +2,7 @@
 // The … menu reveals Delete and Archive actions.
 
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { MoreHorizontal, Trash2, Archive } from "lucide-react";
 import type { Application } from "../types";
 import CompanyAvatar from "./CompanyAvatar";
@@ -13,7 +13,7 @@ interface Props {
   onArchive: (id: string) => void;
 }
 
-export default function AppCard({ app, onDelete, onArchive }: Props) {
+function AppCard({ app, onDelete, onArchive }: Props) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -131,3 +131,5 @@ export default function AppCard({ app, onDelete, onArchive }: Props) {
     </div>
   );
 }
+
+export default memo(AppCard);

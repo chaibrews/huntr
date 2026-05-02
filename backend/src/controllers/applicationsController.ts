@@ -3,8 +3,7 @@ import { z } from "zod";
 import { prisma } from "../libs/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 
-// Takes a full application object (with nested company)
-// and flattens it into a simpler shape.
+// Takes a full application object (with nested company) and flattens it into a simpler shape.
 function flattenApplication(app: any) {
   const { company, ...rest } = app;
   return {
@@ -241,10 +240,6 @@ export const updateApplicationStatus = async (
     return;
   }
 
-  // $transaction runs multiple DB operations atomically.
-  // If either operation fails, both are rolled back —
-  // you'll never end up with a status update without a history record,
-  // or a history record for a status that didn't actually change.
   const [application] = await prisma.$transaction([
     prisma.application.update({
       where: { id: String(req.params.id) },
@@ -258,8 +253,8 @@ export const updateApplicationStatus = async (
     prisma.statusHistory.create({
       data: {
         applicationId: String(req.params.id),
-        from: existing.status, // the current status before changing
-        to: parsed.data.status, // the new status
+        from: existing.status,
+        to: parsed.data.status,
       },
     }),
   ]);
@@ -277,11 +272,7 @@ export const deleteApplication = async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // StatusHistory rows are deleted automatically because of
-  // onDelete: Cascade in the Prisma schema — no need to delete
-  // them manually first.
   await prisma.application.delete({ where: { id: String(req.params.id) } });
 
-  // 204 No Content — success, but nothing to return
   res.status(204).send();
 };

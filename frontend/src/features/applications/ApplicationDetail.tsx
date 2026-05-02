@@ -30,22 +30,28 @@ const WORK_OPTIONS: { value: WorkSetup; label: string }[] = [
 export default function ApplicationDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { changeStatus, update, remove } = useApplications();
+  const { applications, changeStatus, update, remove } = useApplications();
 
-  const [app, setApp] = useState<Application | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = applications.find((a) => a.id === id) ?? null;
+  const [app, setApp] = useState<Application | null>(cached);
+  const [loading, setLoading] = useState(!app); // skip spinner if we have cached data
   const [error, setError] = useState<string | null>(null);
 
-  // Draft fields for inline editing
-  const [notesDraft, setNotesDraft] = useState("");
-  const [companyDraft, setCompanyDraft] = useState("");
-  const [roleDraft, setRoleDraft] = useState("");
-  const [locationDraft, setLocationDraft] = useState("");
-  const [jobDescDraft, setJobDescDraft] = useState("");
-  const [companyNotesDraft, setCompanyNotesDraft] = useState("");
+  // Initialize drafts from whatever we have — cache or null
+  const [notesDraft, setNotesDraft] = useState(cached?.notes ?? "");
+  const [companyDraft, setCompanyDraft] = useState(cached?.company ?? "");
+  const [roleDraft, setRoleDraft] = useState(cached?.role ?? "");
+  const [locationDraft, setLocationDraft] = useState(cached?.location ?? "");
+  const [jobDescDraft, setJobDescDraft] = useState(
+    cached?.jobDescription ?? "",
+  );
+  const [companyNotesDraft, setCompanyNotesDraft] = useState(
+    cached?.companyNotes ?? "",
+  );
 
   useEffect(() => {
     if (!id) return;
+    // Always fetch in background to get fresh data (companyNotes, latest statusHistory, etc.)
     getApplicationById(id)
       .then((data) => {
         setApp(data);
@@ -86,17 +92,27 @@ export default function ApplicationDetail() {
 
   async function handleFieldSave(field: string, value: string | null) {
     if (!app) return;
-    const updated = await update(app.id, { [field]: value || null });
-    setApp(updated);
-    // Sync drafts with server response
-    if (field === "company") setCompanyDraft(updated.company);
-    if (field === "role") setRoleDraft(updated.role);
-    if (field === "location") setLocationDraft(updated.location ?? "");
-    if (field === "jobDescription")
-      setJobDescDraft(updated.jobDescription ?? "");
-    if (field === "notes") setNotesDraft(updated.notes ?? "");
-    if (field === "companyNotes")
-      setCompanyNotesDraft(updated.companyNotes ?? "");
+
+    //   // 1. Update UI immediately
+    setApp((p) => (p ? { ...p, [field]: value || null } : p));
+
+    try {
+      const updated = await update(app.id, { [field]: value || null });
+      setApp(updated);
+      // Sync draft state
+      if (field === "company") setCompanyDraft(updated.company);
+      if (field === "role") setRoleDraft(updated.role);
+      if (field === "location") setLocationDraft(updated.location ?? "");
+      if (field === "jobDescription")
+        setJobDescDraft(updated.jobDescription ?? "");
+      if (field === "notes") setNotesDraft(updated.notes ?? "");
+      if (field === "companyNotes")
+        setCompanyNotesDraft(updated.companyNotes ?? "");
+    } catch {
+      // 3. Rollback — re-fetch to get clean state
+      const reverted = await getApplicationById(app.id);
+      setApp(reverted);
+    }
   }
 
   async function handleDelete() {
