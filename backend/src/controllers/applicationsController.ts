@@ -143,8 +143,6 @@ export const getApplicationById = async (req: AuthRequest, res: Response) => {
 
 // ── UPDATE FIELDS ─────────────────────────────────────
 export const updateApplication = async (req: AuthRequest, res: Response) => {
-  // .partial() makes all fields optional — useful for PATCH
-  // where the client only sends the fields they want to change
   const parsed = ApplicationBody.partial().safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -154,18 +152,35 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
   // Verify ownership before updating
   const existing = await prisma.application.findFirst({
     where: { id: String(req.params.id), userId: req.userId },
+    include: { company: true },
   });
   if (!existing) {
     res.status(404).json({ error: "Application not found" });
     return;
   }
 
-  const { tags: tagInputs, ...updateData } = parsed.data;
+  const {
+    tags: tagInputs,
+    company: companyName,
+    location,
+    ...appFields
+  } = parsed.data;
+
+  // If company name or location changed, update the Company record
+  if (companyName !== undefined || location !== undefined) {
+    await prisma.company.update({
+      where: { id: existing.companyId },
+      data: {
+        ...(companyName !== undefined && { name: companyName }),
+        ...(location !== undefined && { location }),
+      },
+    });
+  }
 
   const application = await prisma.application.update({
     where: { id: String(req.params.id) },
     data: {
-      ...updateData,
+      ...appFields, // ← clean now: no company string, no location
       ...(tagInputs
         ? {
             tags: {
