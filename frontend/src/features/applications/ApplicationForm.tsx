@@ -175,20 +175,6 @@ export default function ApplicationForm({
                 className={inputClass}
               />
             </Field>
-
-            <Field label="Location">
-              <Autocomplete
-                value={location}
-                onChange={setLocation}
-                suggestions={locations}
-                placeholder="e.g. Remote, Makati"
-                className={inputClass}
-              />
-            </Field>
-          </div>
-
-          {/* Row 2 */}
-          <div className="grid gap-3 grid-cols-2">
             <Field label="Role" required>
               <Autocomplete
                 value={role}
@@ -199,6 +185,20 @@ export default function ApplicationForm({
                 className={inputClass}
               />
             </Field>
+          </div>
+
+          {/* Row 2 */}
+          <div className="grid gap-3 grid-cols-2">
+            <Field label="Location">
+              <Autocomplete
+                value={location}
+                onChange={setLocation}
+                suggestions={locations}
+                placeholder="e.g. Remote, Makati"
+                className={inputClass}
+              />
+            </Field>
+
             <Field label="Work Setup">
               <select
                 value={workSetup}

@@ -1,6 +1,17 @@
-# huntR
+<div align="center">
 
-A kanban-style job application tracker. Add jobs, move them through stages, tag them, and keep notes — all in one place.
+  <a href="https://github.com/github_username/repo_name">
+    <img src="public/huntr-logo.svg" alt="Logo" width="80" height="80">
+  </a>
+  
+  <h3 align="center" style="margin-top: 0px;">huntR</h3>
+
+  <p align="center">
+    A kanban-style job application tracker. Add jobs, move them through stages, tag them, and keep notes — all in one place.
+    <br />
+    <a href="https://career-huntr.vercel.app/"><strong>Live Site    → </strong></a>
+  </p>
+</div>
 
 ## Tech Stack
 
@@ -14,6 +25,8 @@ A kanban-style job application tracker. Add jobs, move them through stages, tag 
 
 ## Features
 
+### v1.0.0
+
 - **Kanban board** — Saved → Applied → Interview → Offer / Rejected / Archived
 - **Application details** — Inline editing for every field: status, role, job description, and notes
 - **Status timeline** — Automatic history of status changes with timestamps
@@ -22,3 +35,31 @@ A kanban-style job application tracker. Add jobs, move them through stages, tag 
 - **Optimistic updates** — Actions reflect instantly in the UI while syncing with the backend
 - **Search** — Quickly find applications by company, role, location, or tag
 - **Smart autocomplete** — Autocomplete for company, role, location, and tag fields
+
+## Roadmap
+
+### v1.0.1 Polishing Core Flow
+
+- [ ] Offers page (complete the core user journey)
+- [ ] Filtering + sorting (status, tags, location)
+- [ ] Empty states, loading states, error handling
+- [ ] Mobile responsiveness
+- [ ] Form UX improvements (keyboard nav, validation)
+
+### v1.1.0 Interaction & UX
+
+- [ ] Drag and drop Kanban
+- [ ] Calendar view (interviews, deadlines)
+- [ ] Notifications/reminders
+
+### v1.2.0 Insights & Data
+
+- [ ] Analytics dashboard (applications sent, response rate)
+- [ ] Basic charts (applications over time)
+- [ ] Data aggregation (this shows backend + thinking)
+
+### v1.3.0 Accounts
+
+- [ ] Google OAuth
+- [ ] User settings
+- [ ] Data export (CSV)

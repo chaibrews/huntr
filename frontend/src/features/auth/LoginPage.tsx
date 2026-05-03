@@ -33,7 +33,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm bg-white rounded-xl shadow-2xl p-8 z-10">
         <div className="flex flex-col items-center">
           <div className="flex items-center gap-1">
-            <img src="/huntr.svg" alt="Logo" className="w-8" />
+            <img src="/huntr-logo.svg" alt="Logo" className="w-8" />
             <h1 className="text-3xl  text-primary-darker mb-1">huntR.</h1>
           </div>
           <p className="text-lg mb-6">Welcome back to the job hunt.</p>
