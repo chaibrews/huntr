@@ -1,15 +1,14 @@
-# huntr
-
 <div align="center">
 
 <a href="https://github.com/github_username/repo_name">
-<img src="frontend/public/huntr-logo.svg" alt="Logo" width="50" height="50">
+<img src="frontend/public/huntr-logo.svg" alt="Logo" width="60" height="60">
 </a>
 
   <p align="center">
     <a href="https://career-huntr.vercel.app/"><strong>huntR | Live Site → </strong></a>
     <br />
-    A kanban-style job application tracker. Add jobs, move them through stages, tag them, and keep notes — all in one place.
+    <br />
+    huntR is a kanban-style job application tracker designed to make the job search process more organized and less stressful. Add jobs, move them through stages, tag them, and keep notes — all in one place.
 
   </p>
 
