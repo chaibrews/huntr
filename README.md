@@ -1,17 +1,21 @@
+# huntr
+
 <div align="center">
 
-  <a href="https://github.com/github_username/repo_name">
-    <img src="frontend/public/huntr-logo.svg" alt="Logo" width="80" height="80">
-  </a>
-  
-  <h3 align="center" style="margin-top: 0px;">huntR</h3>
+<a href="https://github.com/github_username/repo_name">
+<img src="frontend/public/huntr-logo.svg" alt="Logo" width="50" height="50">
+</a>
 
   <p align="center">
-    A kanban-style job application tracker. Add jobs, move them through stages, tag them, and keep notes — all in one place.
+    <a href="https://career-huntr.vercel.app/"><strong>huntR | Live Site → </strong></a>
     <br />
-    <a href="https://career-huntr.vercel.app/"><strong>Live Site    → </strong></a>
+    A kanban-style job application tracker. Add jobs, move them through stages, tag them, and keep notes — all in one place.
+
   </p>
+
 </div>
+
+<img src="frontend/public/preview.png" alt="Preview">
 
 ## Tech Stack
 
