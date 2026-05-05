@@ -47,7 +47,7 @@ export default function BoardPage() {
 
   const [defaultStatus, setDefaultStatus] = useState<Status>("SAVED");
   const [search, setSearch] = useState("");
-  const { user } = useAuthContext();
+  // const { user } = useAuthContext();
   const navigate = useNavigate();
 
   const openForm = useCallback((status: Status = "SAVED") => {
