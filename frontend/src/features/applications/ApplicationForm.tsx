@@ -55,6 +55,10 @@ function Field({
 const inputClass =
   "bg-background border border-shadow w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-darker/50 focus:bg-white transition-colors";
 
+function toIsoDateTime(date: string) {
+  return date ? `${date}T00:00:00.000Z` : null;
+}
+
 export default function ApplicationForm({
   onClose,
   onCreate,
@@ -122,7 +126,7 @@ export default function ApplicationForm({
         url: url || null,
         notes: notes || null,
         jobDescription: jobDescription || null,
-        appliedAt: appliedAt || null,
+        appliedAt: toIsoDateTime(appliedAt),
         tags,
       });
     } catch (err) {

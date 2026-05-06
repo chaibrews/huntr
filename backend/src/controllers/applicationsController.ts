@@ -14,6 +14,23 @@ function flattenApplication(app: any) {
   };
 }
 
+const DateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/;
+
+const OptionalDateTime = z.preprocess((value) => {
+  if (value === "" || value === null || value === undefined) return null;
+  if (value instanceof Date) return value;
+
+  if (typeof value === "string") {
+    const normalized = DateOnlyPattern.test(value)
+      ? `${value}T00:00:00.000Z`
+      : value;
+
+    return new Date(normalized);
+  }
+
+  return value;
+}, z.date().nullable().optional());
+
 // Validation schema for creating/updating an application.
 const ApplicationBody = z.object({
   company: z.string().min(1),
@@ -23,7 +40,7 @@ const ApplicationBody = z.object({
     .optional(),
   workSetup: z.enum(["ONSITE", "HYBRID", "REMOTE"]).nullable().optional(),
   location: z.string().nullable().optional(),
-  appliedAt: z.string().datetime().nullable().optional(),
+  appliedAt: OptionalDateTime,
   url: z.string().url().nullable().optional(),
   notes: z.string().nullable().optional(),
   companyNotes: z.string().nullable().optional(),
