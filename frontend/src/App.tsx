@@ -7,15 +7,16 @@ import ProfilePage from "./features/profile/ProfilePage";
 import LoginPage from "./features/auth/LoginPage";
 import RegisterPage from "./features/auth/RegisterPage";
 import ApplicationDetail from "./features/applications/ApplicationDetail";
+import FullPageLoader from "./components/FullPageLoader";
 
 // Wraps any route that requires login.
-// If loading, show nothing (prevents flash).
+// If loading, show full page loader.
 // If no user, redirect to /login.
 // If user exists, render the page normally.
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuthContext();
 
-  if (loading) return null;
+  if (loading) return <FullPageLoader />;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
