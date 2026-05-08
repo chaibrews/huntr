@@ -6,7 +6,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MapPin, Trash2 } from "lucide-react";
-import type { Application, Status, WorkSetup } from "../../types";
+import type {
+  Application,
+  Status,
+  StatusHistory,
+  WorkSetup,
+} from "../../types";
 import { getApplicationById } from "../../api/applications";
 import { useApplications } from "../../hooks/useApplications";
 import {
@@ -29,6 +34,29 @@ const WORK_OPTIONS: { value: WorkSetup; label: string }[] = [
   { value: "HYBRID", label: "Hybrid" },
   { value: "REMOTE", label: "Remote" },
 ];
+
+function includesStatusChange(
+  history: StatusHistory[],
+  change: Pick<StatusHistory, "from" | "to">,
+) {
+  return history.some(
+    (entry) => entry.from === change.from && entry.to === change.to,
+  );
+}
+
+function withStatusChangeFallback(
+  updated: Application,
+  optimisticHistory: StatusHistory,
+) {
+  if (includesStatusChange(updated.statusHistory, optimisticHistory)) {
+    return updated;
+  }
+
+  return {
+    ...updated,
+    statusHistory: [...updated.statusHistory, optimisticHistory],
+  };
+}
 
 export default function ApplicationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -77,22 +105,22 @@ export default function ApplicationDetail() {
 
   async function handleStatusChange(status: Status) {
     if (!app) return;
+    if (status === app.status) return;
+
     const previous = app;
+    const optimisticHistory: StatusHistory = {
+      id: `temp-history-${Date.now()}`,
+      from: app.status,
+      to: status,
+      changedAt: new Date().toISOString(),
+    };
 
     setApp((p) =>
       p
         ? {
             ...p,
             status,
-            statusHistory: [
-              ...p.statusHistory,
-              {
-                id: `temp-history-${Date.now()}`,
-                from: p.status,
-                to: status,
-                changedAt: new Date().toISOString(),
-              },
-            ],
+            statusHistory: [...p.statusHistory, optimisticHistory],
           }
         : p,
     );
@@ -101,7 +129,7 @@ export default function ApplicationDetail() {
 
     try {
       const updated = await changeStatus(app.id, status);
-      setApp(updated);
+      setApp(withStatusChangeFallback(updated, optimisticHistory));
     } catch {
       setApp(previous);
       setToast({ visible: false, type: "saved" }); // hide on rollback
